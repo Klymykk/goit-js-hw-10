@@ -4,36 +4,64 @@ import Notiflix from 'notiflix';
 import { fetchCountries } from "./fetchCountries";
 
 const input = document.querySelector("#search-box");
-const list = document.querySelector(".country-list")
+const list = document.querySelector(".country-list");
+const container = document.querySelector(".country-info")
 const DEBOUNCE_DELAY = 300;
 
 input.addEventListener( "input", debounce(getState, DEBOUNCE_DELAY));
 
 function getState(event) {
-    console.log(event.target.value);
-    fetchCountries(event.target.value.trim()).then(data => list.innerHTML = createMarkup(data)).catch(err => console.log(err))
+    const name = event.target.value.trim();
+    if(!name){
+        list.innerHTML = "";
+        container.innerHTML = "";
+        return;
+    }
+
+    fetchCountries(name)
+    .then(data => createMarkup(data))
+    .catch(err => console.log(err))
 }
 
 function createMarkup(arr) {
-    if(Number(arr.length) > 10){
-       return Notiflix.Notify.info("Too many matches found. Please enter a more specific name.")
-    } else if(arr.length <= 10 && arr.length > 1){
-        return arr.map(({flags:{svg}, name:{official}}) =>{
-            `<li>
-                <img src="${svg}" alt="${official}">
-                <h2>${official}</h2>
-            </li>`
-        }).join('');
+    if(arr.length > 10){
+        Notiflix.Notify.info("Too many matches found. Please enter a more specific name.");
+        list.innerHTML = "";
+        container.innerHTML = "";
+
+        return;
     } else if(arr.length === 1){
-        return arr.map(({flags:{svg}, name:{official}, capital, languages, population}) =>{
-            `<li>
-                <img src="${svg}" alt="${official}">
-                <h2>${official}</h2>
-                <p>Capital: ${capital}</p>
-                <p>Population: ${population}</p>
-                <p>Languages: ${languages.join('')}</p>
-            </li>`
-        }).join('');
-    }
+        list.innerHTML = "";
+        return createMarkupContainer(arr);
+    } else if(arr.length > 1){
+        container.innerHTML = "";
+        return createMarkupList(arr);
+    } 
 }
-// {flags:{svg}, name:{official}, capital, languages, population}
+
+function createMarkupContainer(array) {
+    const markupContainer = array.map(({flags:{svg}, name:{official}, capital, languages, population}) =>{
+        return `<li>
+            <div class="container">
+                <img src="${svg}" alt="Flag of ${official}" width="60">
+                <h2>${official}</h2>
+            </div>
+            <p>Capital: ${capital}</p>
+            <p>Population: ${population}</p>
+            <p>Languages: ${Object.values(languages).join(", ")}</p>
+        </li>`
+    }).join('');
+    container.innerHTML = markupContainer;
+}
+
+function createMarkupList(array) {
+    const markupList = array.map(({flags:{svg}, name:{official}}) =>{
+        return `<li>
+            <div class="container">
+            <img src="${svg}" alt="Flag of ${official}" width="60" >
+            <h2>${official}</h2>
+            </div>
+        </li>`
+    }).join('');
+    list.innerHTML = markupList;
+}
