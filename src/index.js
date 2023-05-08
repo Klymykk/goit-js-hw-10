@@ -5,7 +5,7 @@ import { fetchCountries } from "./fetchCountries";
 
 const input = document.querySelector("#search-box");
 const list = document.querySelector(".country-list");
-const container = document.querySelector(".country-info")
+const container = document.querySelector(".country-info");
 const DEBOUNCE_DELAY = 300;
 
 input.addEventListener( "input", debounce(getState, DEBOUNCE_DELAY));
@@ -20,7 +20,12 @@ function getState(event) {
 
     fetchCountries(name)
     .then(data => createMarkup(data))
-    .catch(err => console.log(err))
+    .catch(err =>{ 
+        Notiflix.Notify.failure("Oops, there is no country with that name");
+        console.log(err);
+        list.innerHTML = "";
+        container.innerHTML = "";
+    })
 }
 
 function createMarkup(arr) {
