@@ -8,7 +8,7 @@ function fetchCountries(state) {
             throw new Error(resp.statusText);
         }
 
-        return resp.json()
+        return resp.json();
     });
 };
 
